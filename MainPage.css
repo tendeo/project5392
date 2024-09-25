@@ -1,0 +1,247 @@
+/* Header.css */
+.header {
+    display: flex; 
+    position: fixed; 
+    top: 0; 
+    left: 0; 
+    width: 100%; 
+    background-color: #d97171; 
+    z-index: 1000; 
+    padding: 10px 0; 
+    height: 60px; 
+}
+
+
+.header-item {
+    flex: 1; 
+    text-align: center; 
+    padding: 0 10px; 
+}
+
+.blank {
+    text-align: left;
+}
+
+.welcome {
+    text-align: center;
+}
+
+.username {
+    text-align: right;
+    position: relative;
+}
+
+.logout-link {
+    display: block;
+    margin-top: 5px;
+    color: #007bff;
+    text-decoration: none;
+}
+
+.logout-link:hover {
+    text-decoration: underline;
+}
+
+/* Second header (directly under the fixed red header) */
+.second_header {
+    display: flex; 
+    position: fixed; /* Sticks to the viewport */
+    top: 60px; /* Position it just below the fixed red header */
+    left: 0;  /* Make sure it starts at the very left of the screen */
+    right: 0; /* Ensure it spans the full width of the screen */
+    padding: 10px 0;
+    background-color: #e1d7d7; /* Background for clarity */
+    z-index: 999; /* Keep it above other content if needed */
+}
+
+.second-item {
+    flex: 1;
+    text-align: center;
+}
+
+.left {
+    text-align: left;
+}
+
+.middle {
+    text-align: center;
+}
+
+.right {
+    text-align: right;
+}
+
+/* Header.css */
+
+/* Dropdown for Node Actions */
+.dropdown-node-actions {
+    margin-top: 10px; /* Space between 'Tasks' and 'Node Actions' */
+}
+
+/* Link for Node Status with space below */
+.node-status {
+    display: block;
+    margin-top: 20px; /* Space between 'Node Actions' and 'Node Status' */
+    color: #007bff;
+    text-decoration: none; /* Remove underline */
+}
+
+/* Hover effect for Node Status link */
+.node-status:hover {
+    text-decoration: underline; /* Underline on hover */
+}
+
+/* Dropdown for Create/Delete Node with space between Node Status */
+.dropdown-create-delete-node {
+    margin-top: 20px; /* Add space between 'Node Status' and 'Create/Delete' dropdown */
+}
+
+/* MainPage.css */
+
+/* Adjusting layout for Dialogue Space and form */
+/* Dialogue Space container */
+.dialogue-space {
+    border: 1px solid #ccc;
+    padding: 10px;
+    background-color: #f9f9f9;
+    text-align: right; /* Align content to the right */
+}
+
+/* Create Node form container */
+.create-node-form {
+    display: inline-block; /* Keep the form as an inline block so it doesn't stretch */
+    margin-top: 20px;
+    padding: 10px;
+    border: 1px solid #ddd;
+    background-color: #fff;
+    width: 280px; /* Set a smaller width for the form */
+    box-sizing: border-box; /* Ensure padding is included in the width */
+    text-align: left; /* Ensure the internal text is aligned left */
+}
+
+/* Form input fields and layout */
+.create-node-form form div {
+    margin-bottom: 10px;
+}
+
+.create-node-form label {
+    display: block;
+    margin-bottom: 5px;
+}
+
+.create-node-form input {
+    width: 100%; /* Keep input fields full-width inside the form */
+    padding: 5px;
+    box-sizing: border-box; /* Include padding in the width */
+}
+
+.create-node-form button {
+    padding: 8px 16px;
+    background-color: #007bff;
+    color: white;
+    border: none;
+    cursor: pointer;
+    width: 100%; /* Make the button span the form's width */
+}
+
+.create-node-form button:hover {
+    background-color: #0056b3;
+}
+
+
+.network-ring {
+    position: relative;
+    width: 300px;
+    height: 300px;
+    margin: 0 auto;
+    border: 1px solid #ccc;
+    border-radius: 50%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.node {
+    position: absolute;
+    width: 50px;
+    height: 50px;
+    background-color: #007bff;
+    color: white;
+    border-radius: 50%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-weight: bold;
+}
+
+/* Place nodes in a circular layout */
+.network-ring .node:nth-child(1) {
+    top: 20%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+}
+
+.network-ring .node:nth-child(2) {
+    top: 50%;
+    right: 20%;
+    transform: translate(50%, -50%);
+}
+
+.network-ring .node:nth-child(3) {
+    bottom: 20%;
+    left: 50%;
+    transform: translate(-50%, 50%);
+}
+
+.network-ring .node:nth-child(4) {
+    top: 50%;
+    left: 20%;
+    transform: translate(-50%, -50%);
+}
+
+
+
+
+.delete-node-form {
+    display: inline-block; /* Keep the form as an inline block so it doesn't stretch */
+    margin-top: 20px;
+    padding: 10px;
+    border: 1px solid #ddd;
+    background-color: #fff;
+    width: 280px; /* Set a smaller width for the form */
+    box-sizing: border-box; /* Ensure padding is included in the width */
+    text-align: left; /* Ensure the internal text is aligned left */
+}
+
+/* Form input fields and layout */
+.delete-node-form form div {
+    margin-bottom: 10px;
+}
+
+.delete-node-form label {
+    display: block;
+    margin-bottom: 5px;
+}
+
+.delete-node-form input {
+    width: 100%; /* Keep input fields full-width inside the form */
+    padding: 5px;
+    box-sizing: border-box; /* Include padding in the width */
+}
+
+.delete-node-form button {
+    padding: 8px 16px;
+    background-color: #007bff;
+    color: white;
+    border: none;
+    cursor: pointer;
+    width: 100%; /* Make the button span the form's width */
+}
+
+.delete-node-form button:hover {
+    background-color: #0056b3;
+}
+
+
+
+

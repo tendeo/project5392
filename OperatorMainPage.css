@@ -1,0 +1,74 @@
+.main-header {
+    display: flex; 
+    position: fixed; 
+    top: 0; 
+    left: 0; 
+    width: 100%; 
+    background-color: #d97171; 
+    z-index: 1000; 
+    padding: 10px 0; 
+    height: 60px; 
+}
+
+
+.main-header-item {
+    padding: 0 10px;
+    flex: 1;
+    text-align: center; 
+    
+}
+
+.left {
+    text-align: left;
+}
+
+.middle {
+    text-align: center;
+}
+
+.right {
+    text-align: right;
+    position: relative;
+}
+
+.main-header-item-logout-link {
+    display: block;
+    margin-top: 5px;
+    color: #007bff;
+    text-decoration: none;
+}
+
+.main-header-item-logout-link:hover {
+    text-decoration: underline;
+}
+
+.second_header_operator {
+    display: flex; 
+    position: fixed; /* Sticks to the viewport */
+    top: 60px; /* Position it just below the fixed red header */
+    left: 0;  /* Make sure it starts at the very left of the screen */
+    right: 0; /* Ensure it spans the full width of the screen */
+    padding: 10px 0;
+    background-color: #e1d7d7; /* Background for clarity */
+    z-index: 999; /* Keep it above other content if needed */
+}
+.second_header_item {
+    flex: 1;
+    text-align: center;
+}
+
+.lefty {
+    text-align: left;
+}
+
+.middly {
+    text-align: center;
+}
+
+.righty {
+    text-align: right;
+}
+
+.dropdown-node-actions-operator {
+    margin-top: 30px; 
+}
