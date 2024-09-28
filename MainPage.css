@@ -244,4 +244,152 @@
 
 
 
+.message-node-form {
+    display: inline-block; /* Keep the form as an inline block so it doesn't stretch */
+    margin-top: 20px;
+    padding: 10px;
+    border: 1px solid #ddd;
+    background-color: #fff;
+    width: 280px; /* Set a smaller width for the form */
+    box-sizing: border-box; /* Ensure padding is included in the width */
+    text-align: left; /* Ensure the internal text is aligned left */
+}
+
+/* Form input fields and layout */
+.message-node-form form div {
+    margin-bottom: 10px;
+}
+
+.message-node-form label {
+    display: block;
+    margin-bottom: 5px;
+}
+
+.message-node-form input {
+    width: 100%; /* Keep input fields full-width inside the form */
+    padding: 5px;
+    box-sizing: border-box; /* Include padding in the width */
+}
+
+.message-node-form button {
+    padding: 8px 16px;
+    background-color: #007bff;
+    color: white;
+    border: none;
+    cursor: pointer;
+    width: 100%; /* Make the button span the form's width */
+}
+
+.message-node-form button:hover {
+    background-color: #0056b3;
+}
+
+
+
+.message-sent-form{
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start; /* Align items to the start (left) */
+    margin: 20px auto; /* Center the container */
+    padding: 20px; /* Add padding */
+    border: 1px solid #ccc; /* Optional: Add a border */
+    border-radius: 5px; /* Optional: Rounded corners */
+    background-color: #f9f9f9; /* Optional: Background color */
+    max-width: 600px; /* Limit the width */
+    word-wrap: break-word; /* Break long words to prevent overflow */
+    margin-left: 30px; /* Add margin to the left */
+
+}
+
+
+.create-account-form {
+    display: inline-block; /* Keep the form as an inline block so it doesn't stretch */
+    margin-top: 20px;
+    padding: 10px;
+    border: 1px solid #ddd;
+    background-color: #fff;
+    width: 280px; /* Set a smaller width for the form */
+    box-sizing: border-box; /* Ensure padding is included in the width */
+    text-align: left; /* Ensure the internal text is aligned left */
+}
+
+
+.create-account-form form div {
+    margin-bottom: 10px;
+}
+
+.create-account-form label {
+    display: block;
+    margin-bottom: 5px;
+}
+
+.create-account-form input {
+    width: 100%; /* Keep input fields full-width inside the form */
+    padding: 5px;
+    box-sizing: border-box; /* Include padding in the width */
+}
+
+.create-account-form button {
+    padding: 8px 16px;
+    background-color: #007bff;
+    color: white;
+    border: none;
+    cursor: pointer;
+    width: 100%; /* Make the button span the form's width */
+}
+
+.create-account-form button:hover {
+    background-color: #0056b3;
+}
+
+
+
+.delete-account-form {
+    display: inline-block; /* Keep the form as an inline block */
+    margin-top: 20px;
+    padding: 10px;
+    border: 1px solid #ddd;
+    background-color: #fff;
+    width: 280px; /* Set the same width as create-account-form */
+    box-sizing: border-box; /* Ensure padding is included in the width */
+    text-align: left; /* Ensure the internal text is aligned left */
+}
+
+/* Styling for each account entry in the delete form */
+.delete-account-form div {
+    margin-bottom: 10px;
+}
+
+/* Styling for account email text */
+.delete-account-form p {
+    margin-bottom: 5px;
+    font-size: 1em; /* Keep the font size consistent */
+}
+
+/* Button styling */
+.delete-account-form button {
+    padding: 8px 16px;
+    background-color: #ff4d4d;
+    color: white;
+    border: none;
+    cursor: pointer;
+    width: 30%; /* Full-width button */
+    box-sizing: border-box;
+}
+
+.delete-account-form button:hover {
+    background-color: #d9534f; /* Slightly darker red on hover */
+}
+
+/* Message when no accounts are available */
+.delete-account-form p.no-accounts {
+    font-size: 1em;
+    color: #666;
+    text-align: center;
+    padding: 10px 0;
+}
+
+
+
+
 
