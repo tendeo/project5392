@@ -14,8 +14,8 @@ function App() {
         <Route path="/" element={<LoginForm />} />
         <Route path="/MainPage" element={<Mainpage />} />
         <Route path="/OperatorMainPage" element={<Operatorpage />} />
+        <Route path="/SystemBuffer" element={<LoginForm />} />
 
-       
         
         </Routes>
       

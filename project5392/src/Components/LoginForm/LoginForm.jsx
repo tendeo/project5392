@@ -6,18 +6,29 @@ import { useNavigate } from "react-router-dom";
 
 const LoginForm = () => {
     const [username, setUsername] = useState("");
+    const [password, setPassword] = useState("");
+    const [passwordValid, setIsValid] = useState(true);
     const [selectedRole, setSelectedRole] = useState("Operator"); 
     const navigate = useNavigate();
+
+    const passwordValidation = /^(?=.*[a-zA-Z])(?=.*\d)(?=.*[$%#@&])[A-Za-z\d$%#@&]{6,}$/;
 
     const handleLogin = (e) => {
         e.preventDefault(); 
 
-        
+        //To do: Once backend complete, validate user info before routing
+        //Otherwise: give error message "Invalid user"
         if (selectedRole === "Admin") {
             navigate("/MainPage", { state: { username } });
         } else if (selectedRole === "Operator") {
             navigate("/OperatorMainPage", { state: { username } });
         }
+    };
+
+    const handlePasswordValidation = (e) => {
+        const newPassword = e.target.value;
+        setPassword(newPassword);
+        setIsValid(passwordValidation.test(newPassword))
     };
 
     return (
@@ -33,14 +44,20 @@ const LoginForm = () => {
                     <FaUser className="icon" />
                 </div>
                 <div className="input-box">
-                    <input type="password" placeholder="Password" required />
+                    <input type="password" 
+                        placeholder="Password" 
+                        value={password}
+                        onChange={handlePasswordValidation}
+                        required />
                     <FaLock className="icon" />
                 </div>
-
+                <p style={{ color: !passwordValid &&!!password.length && 'red' }}>
+                        {!passwordValid && !!password.length && 'Password must be at least 6 characters long, contain at least one letter, one number, and one special character ($, %, #, @, &).'}
+                        </p>
                 <label>
-                    Pick One:
+                    Select Role: &nbsp;
                     <select
-                        name="selectedone"
+                        name="selectedRole"
                         value={selectedRole}
                         onChange={(e) => setSelectedRole(e.target.value)} 
                     >
