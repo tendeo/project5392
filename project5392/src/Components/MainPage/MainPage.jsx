@@ -22,6 +22,8 @@ const Mainpage = () => {
   const [Type, setType] = useState();
   const [Email, setEmail] = useState("");
 
+  const emailValidation = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
   const [CurrNodes, SetCurNodes] = useState([
     { id: "N1", leftNeighbor: "N3", rightNeighbor: "N2", inboxSize: 3 },
     { id: "N2", leftNeighbor: "N1", rightNeighbor: "N3", inboxSize: 3 },
@@ -71,47 +73,96 @@ const Mainpage = () => {
 
   const handleDeleteNode = (e) => {
     e.preventDefault();
-    SetCurNodes((prevNodes) =>
-      prevNodes.filter((node) => node.id !== DelNodeId)
-    );
+
+    // Check if there are only 3 nodes
+    if (CurrNodes.length <= 3) {
+      alert("Cannot delete a node when there are only 3 nodes.");
+      return; // Stop if the count is too low
+    }
+
+    // Check if the node ID exists
+    const nodeToDelete = CurrNodes.find(node => node.id === DelNodeId);
+    if (!nodeToDelete) {
+        alert("Node ID does not exist. Please enter a valid Node ID.");
+        return; // Stop if the node does not exist
+    }
+
+    // Find left and right neighbors
+    const leftNeighborId = nodeToDelete.leftNeighbor;
+    const rightNeighborId = nodeToDelete.rightNeighbor;
+
+      // Update neighbors' pointers and remove the deleted node
+    SetCurNodes((prevNodes) => {
+      // First, find the neighbors that need to be updated
+      const updatedNodes = prevNodes.map((node) => {
+        if (node.id === leftNeighborId) {
+          return { ...node, rightNeighbor: rightNeighborId }; // Update right neighbor of left node
+        }
+        if (node.id === rightNeighborId) {
+          return { ...node, leftNeighbor: leftNeighborId }; // Update left neighbor of right node
+        }
+        return node; // Return the node as is if it doesn't need updating
+      });
+
+      // Now filter out the deleted node
+      return updatedNodes.filter(node => node.id !== DelNodeId);
+    });
+
+    // Clear the delete input field
     setDelNodeId("");
+
   };
 
   const handleCreateNode = (e) => {
     e.preventDefault();
 
+    // Check if there are already 10 nodes
+    if (CurrNodes.length >= 10) {
+      alert("Cannot create a node when there are already 10 nodes.");
+      return; // Stop if the count is too high
+    }
+
+    // Validation for node ID format
+    const nodeFormat = /^N\d+$/; // Regex for Nx where x is a number
+    if (!nodeFormat.test(nodeId)) {
+      alert("Node ID must be in the format 'Nx' where x is a number.");
+      return; // Stop if the format is invalid
+    }
+
+    // Check if node ID already exists
+    const nodeExists = CurrNodes.some(node => node.id === nodeId);
+    if (nodeExists) {
+        alert("Node ID already exists. Please use a unique ID.");
+        return; // Stop if the ID already exists
+    }
+
+    // Check if left and right neighbors exist
+    const leftNeighborExists = CurrNodes.some(node => node.id === leftNeighbor);
+    const rightNeighborExists = CurrNodes.some(node => node.id === rightNeighbor);
+    if (!leftNeighborExists || !rightNeighborExists) {
+        alert("Both left and right neighbors must exist in the current nodes.");
+        return; // Stop if neighbors do not exist
+    }
+
     // Create a new node object
     const newNode = { id: nodeId, leftNeighbor, rightNeighbor, inboxSize };
 
-    // Update neighbors' pointers and maintain circular order
-    SetCurNodes((prevNodes) => {
-      // Create a new array to maintain the correct circular order
-      const updatedNodes = [];
+      // Update nodes with new node
+      SetCurNodes((prevNodes) => {
+        // Update the neighbors' pointers correctly
+        const updatedNodes = prevNodes.map(node => {
+          if (node.id === leftNeighbor) {
+            return { ...node, rightNeighbor: nodeId };
+          }
+          if (node.id === rightNeighbor) {
+            return { ...node, leftNeighbor: nodeId };
+          }
+          return node;
+        });
 
-      for (let node of prevNodes) {
-        updatedNodes.push(node);
-
-        // Insert the new node between leftNeighbor and rightNeighbor
-        if (node.id === leftNeighbor) {
-          updatedNodes.push(newNode);
-        }
-      }
-
-      // Update the neighbors of the new node and its neighbors in the updated list
-      return updatedNodes.map((node) => {
-        if (node.id === leftNeighbor) {
-          return { ...node, rightNeighbor: nodeId };
-        }
-        if (node.id === rightNeighbor) {
-          return { ...node, leftNeighbor: nodeId };
-        }
-        if (node.id === nodeId) {
-          return { ...node, leftNeighbor, rightNeighbor };
-        }
-        return node;
+        // Add the new node
+        return [...updatedNodes, newNode];
       });
-    });
-
     // Clear the input fields
     setNodeId("");
     setLeftNeighbor("");
@@ -121,7 +172,17 @@ const Mainpage = () => {
 
   const handleCreateAccount = (e) => {
     e.preventDefault();
-    const newNode = { FirstName, LastName, Type, Email };
+
+    // Validate email format
+    if (!emailValidation.test(Email)) {
+      alert("Please enter a valid email address.");
+      return; // Stop the function if the email is invalid
+    }
+
+    // Generate username
+    const username = `${FirstName.charAt(0).toLowerCase()}${LastName.toLowerCase()}`;
+
+    const newNode = { FirstName, LastName, Type, Email, username};
     SetAccounts((prevNodes) => [...prevNodes, newNode]);
 
     setFirstName("");
@@ -130,9 +191,9 @@ const Mainpage = () => {
     setEmail("");
   };
 
-  const handleDeleteAccount = (emailToDelete) => {
+  const handleDeleteAccount = (usernameToDelete) => {
     SetAccounts((prevAccounts) =>
-      prevAccounts.filter((account) => account.Email !== emailToDelete)
+      prevAccounts.filter((account) => account.username !== usernameToDelete)
     );
   };
   return (
@@ -416,11 +477,11 @@ const Mainpage = () => {
               <div>
                 {Accounts.length > 0 ? (
                   Accounts.map((account) => (
-                    <div key={account.Email}>
+                    <div key={account.username}>
                       <p>
-                        {account.Email} :{" "}
+                        {account.username} :{" "}
                         <button
-                          onClick={() => handleDeleteAccount(account.Email)}
+                          onClick={() => handleDeleteAccount(account.username)}
                         >
                           Delete
                         </button>
@@ -435,6 +496,7 @@ const Mainpage = () => {
           )}
         </div>
       </div>
+      <div className="button-container"></div>
       <button
         className="system-buffer-link"
         onClick={() => navigate("/SystemBuffer")}
