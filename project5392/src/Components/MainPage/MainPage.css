@@ -81,7 +81,7 @@
 .node-status {
   display: block;
   margin-top: 20px; /* Space between 'Node Actions' and 'Node Status' */
-  color: #007bff;
+  color: #000000;
   text-decoration: none; /* Remove underline */
 }
 
@@ -376,7 +376,7 @@
 }
 
 .button-container {
-  position: fixed; /* Fixed position to stick to the viewport */
+  position: absolute; /* Fixed position to stick to the viewport */
   bottom: 20px; /* Distance from the bottom */
   left: 50%; /* Center horizontally */
   transform: translateX(-50%); /* Adjust to center */
@@ -384,6 +384,12 @@
 }
 
 .system-buffer-link {
+  position: absolute;
+  width: 300px;
+  height: 50px;
+  bottom: 20px; /* Distance from the bottom */
+  left: 50%; /* Center horizontally */
+  transform: translateX(-50%); /* Adjust to center */
   color: red;
   padding: 10px 20px; /* Add padding for better click area */
   background-color: #fff; /* Background color for visibility */

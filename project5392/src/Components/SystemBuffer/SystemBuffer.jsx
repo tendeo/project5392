@@ -6,12 +6,6 @@ const SystemBuffer = () => {
   return (
     <div className="system-buffer-container">
       <h1 className="system-buffer-title">System Buffer</h1>
-      <textarea
-        className="system-buffer-textbox"
-        rows="10"
-        cols="100"
-        placeholder="Display your big text here..."
-      />
       <div className="undelivered-messages">
         <h2>Undelivered Messages</h2>
         {Array.from({ length: 5 }, (_, index) => (
