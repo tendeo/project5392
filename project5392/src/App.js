@@ -6,6 +6,7 @@ import Operatorpage from "./Components/MainPage/OperatorMainPage";
 import SystemBuffer from "./Components/SystemBuffer/SystemBuffer";
 import ArchivedBuffer from "./Components/SystemBuffer/ArchivedBuffer"; // Import the new component
 import ArchivedStore from "./Components/ArchivedStore/ArchivedStore";
+import OperatorSystemBuffer from "./Components/SystemBuffer/OperatorSystemBuffer";
 
 function App() {
   return (
@@ -18,6 +19,8 @@ function App() {
           <Route path="/SystemBuffer" element={<SystemBuffer />} />
           <Route path="/ArchivedBuffer" element={<ArchivedBuffer />} /> {/* New route */}
           <Route path="/ArchivedStore" element={<ArchivedStore />}/> 
+          <Route path="/OperatorSystemBuffer" element={<OperatorSystemBuffer />}/> 
+
 
         </Routes>
       </Router>

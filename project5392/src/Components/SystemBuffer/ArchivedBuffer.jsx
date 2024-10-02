@@ -1,5 +1,5 @@
 import React, { useState } from 'react'; // Import useState
-import './SystemBuffer.css'; // Ensure you have a CSS file for styling
+import './ArchivedBuffer.css'; // Ensure you have a CSS file for styling
 import { useNavigate } from 'react-router-dom'; // Import useNavigate
 import Messagecreated from "../Parts/MessageCreated";
 
