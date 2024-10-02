@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import "./MainPage.css";
 import { useLocation } from "react-router-dom";
 import { useNavigate } from "react-router-dom";
@@ -32,24 +32,24 @@ const Mainpage = () => {
     setShowMessageStatus(!showMessageStatus);
   };
 
-  const [CurrNodes, SetCurNodes] = useState([
-    { id: "N1", status: "Active", leftNeighbor: "N3", rightNeighbor: "N2", inboxSize: 2, inbox: ["Message 1", "Message 2"], store: [] },
-    { id: "N2", status: "Active", leftNeighbor: "N1", rightNeighbor: "N3", inboxSize: 2, inbox: ["Message 1"], store: [] },
-    { id: "N3", status: "Active",leftNeighbor: "N2", rightNeighbor: "N1", inboxSize: 3, inbox: [], store: [] },
-  ]);
+  const [CurrNodes, SetCurNodes] = useState(() => {
+    const savedNodes = localStorage.getItem("nodes");
+    return savedNodes ? JSON.parse(savedNodes) : [
+      { id: "N1", status: "Active", leftNeighbor: "N3", rightNeighbor: "N2", inboxSize: 2, inbox: ["Message 1", "Message 2"], store: [] },
+      { id: "N2", status: "Active", leftNeighbor: "N1", rightNeighbor: "N3", inboxSize: 2, inbox: ["Message 1"], store: [] },
+      { id: "N3", status: "Active", leftNeighbor: "N2", rightNeighbor: "N1", inboxSize: 3, inbox: [], store: [] },
+    ];
+  });
+
   const [nodeId, setNodeId] = useState("");
   const [leftNeighbor, setLeftNeighbor] = useState("");
   const [rightNeighbor, setRightNeighbor] = useState("");
   const [inboxSize, setInboxSize] = useState("");
-
   const [DelNodeId, setDelNodeId] = useState("");
-
   const [selectedNodeDetails, setSelectedNodeDetails] = useState(null);
-
   const location = useLocation();
   const username = location.state?.username || "Guest";
   const navigate = useNavigate();
-
   const [messageSent, setMessageSent] = useState(false);
   const [sentMessageDetails, setSentMessageDetails] = useState({});
 
@@ -76,11 +76,13 @@ const Mainpage = () => {
   };
 
   const toggleNodeStatus = (nodeId) => {
-    SetCurNodes((prevNodes) => 
-      prevNodes.map(node => 
+    SetCurNodes((prevNodes) => {
+      const updatedNodes = prevNodes.map(node => 
         node.id === nodeId ? { ...node, status: node.status === "Active" ? "Inactive" : "Active" } : node
-      )
-    );
+      );
+      localStorage.setItem("nodes", JSON.stringify(updatedNodes)); // Save to localStorage
+      return updatedNodes;
+    });
   };
 
   const handleSendMessage = (e) => {
@@ -135,22 +137,19 @@ const Mainpage = () => {
     const rightNeighborId = nodeToDelete.rightNeighbor;
 
       // Update neighbors' pointers and remove the deleted node
-    SetCurNodes((prevNodes) => {
-      // First, find the neighbors that need to be updated
-      const updatedNodes = prevNodes.map((node) => {
-        if (node.id === leftNeighborId) {
-          return { ...node, rightNeighbor: rightNeighborId }; // Update right neighbor of left node
-        }
-        if (node.id === rightNeighborId) {
-          return { ...node, leftNeighbor: leftNeighborId }; // Update left neighbor of right node
-        }
-        return node; // Return the node as is if it doesn't need updating
+      SetCurNodes((prevNodes) => {
+        const updatedNodes = prevNodes.map((node) => {
+          if (node.id === leftNeighborId) {
+            return { ...node, rightNeighbor: rightNeighborId };
+          }
+          if (node.id === rightNeighborId) {
+            return { ...node, leftNeighbor: leftNeighborId };
+          }
+          return node;
+        }).filter(node => node.id !== DelNodeId);
+        localStorage.setItem("nodes", JSON.stringify(updatedNodes)); // Save to localStorage
+        return updatedNodes;
       });
-
-      // Now filter out the deleted node
-      return updatedNodes.filter(node => node.id !== DelNodeId);
-    });
-
     // Clear the delete input field
     setDelNodeId("");
 
@@ -190,23 +189,20 @@ const Mainpage = () => {
     // Create a new node object
     const newNode = { id: nodeId, leftNeighbor, rightNeighbor, inboxSize };
 
-      // Update nodes with new node
-      SetCurNodes((prevNodes) => {
-        // Update the neighbors' pointers correctly
-        const updatedNodes = prevNodes.map(prevNode => {
-          if (prevNode.id === leftNeighbor) {
-            return { ...prevNode, rightNeighbor: nodeId };
-          }
-          if (prevNode.id === rightNeighbor) {
-            return { ...prevNode, leftNeighbor: nodeId };
-          }
-          return prevNode;
-        });
+    SetCurNodes((prevNodes) => {
+      const updatedNodes = prevNodes.map(prevNode => {
+        if (prevNode.id === leftNeighbor) {
+          return { ...prevNode, rightNeighbor: nodeId };
+        }
+        if (prevNode.id === rightNeighbor) {
+          return { ...prevNode, leftNeighbor: nodeId };
+        }
+        return prevNode;
+      }).concat(newNode);
+      localStorage.setItem("nodes", JSON.stringify(updatedNodes)); // Save to localStorage
+      return updatedNodes;
+    });
 
-        // Add the new node
-        updatedNodes.push(newNode);
-        return updatedNodes;
-      });
     // Clear the input fields
     setNodeId("");
     setLeftNeighbor("");
@@ -240,6 +236,16 @@ const Mainpage = () => {
       prevAccounts.filter((account) => account.username !== usernameToDelete)
     );
   };
+
+
+  useEffect(() => {
+    // Load nodes from localStorage when the component mounts
+    const savedNodes = localStorage.getItem("nodes");
+    if (savedNodes) {
+      SetCurNodes(JSON.parse(savedNodes));
+    }
+  }, []);
+
   return (
     <div>
       <div className="header">
