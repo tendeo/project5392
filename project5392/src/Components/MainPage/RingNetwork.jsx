@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import "./RingNetwork.css"; // CSS for styling
 
-const RingNetworks = ({ nodes, deleteNode, showDetails }) => {
+const RingNetwork = ({ nodes, deleteNode, showDetails }) => {
   const radius = 150; // Radius of the circle
   const centerX = 200; // Center X coordinate
   const centerY = 200; // Center Y coordinate
@@ -103,7 +103,8 @@ const RingNetworks = ({ nodes, deleteNode, showDetails }) => {
           <button
             className="delete-button"
             onClick={() => {
-              deleteNode(selectedNode.id);
+              console.log("Deleting Node ID:", selectedNode.id); // Log the ID
+              deleteNode(selectedNode);
               setSelectedNode(null);
             }}
           >
@@ -118,4 +119,4 @@ const RingNetworks = ({ nodes, deleteNode, showDetails }) => {
   );
 };
 
-export default RingNetworks;
+export default RingNetwork;

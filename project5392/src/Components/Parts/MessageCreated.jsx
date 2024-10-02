@@ -13,15 +13,15 @@ const Messagecreated = ({ message, messageID, senderID, receiverID }) => {
 
     return (
         
-        <div>
+        <div className="message-details">
             <h3>Message Details</h3>
             <p><strong>Message:</strong> {message}</p>
             <p><strong>Message ID:</strong> {messageID}</p>
             <p><strong>Sender ID:</strong> {senderID}</p>
             <p><strong>Receiver ID:</strong> {receiverID}</p>
             <p><strong>Status:</strong> Created</p>
-            <p><strong>Created On:</strong>{timestamp} </p>
-            <p><strong>Received On:</strong> ""</p>
+            <p><strong>Created On: </strong>{timestamp} </p>
+            <p><strong>Received On: </strong> ""</p>
         </div>
         
 

@@ -5,7 +5,7 @@ import { useNavigate } from "react-router-dom";
 
 import Messagecreated from "../Parts/MessageCreated";
 
-import RingNetworks from "../MainPage/RingNetwork";
+import RingNetwork from "../MainPage/RingNetwork";
 
 const Mainpage = () => {
   const [selectedAction, setSelectedAction] = useState("");
@@ -24,10 +24,18 @@ const Mainpage = () => {
 
   const emailValidation = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
+  const [selectedInboxMessage, setSelectedInboxMessage] = useState("");
+  const [selectedStoreMessage, setSelectedStoreMessage] = useState("");
+  const [showMessageStatus, setShowMessageStatus] = useState(false);
+
+  const handleToggleMessageStatus = () => {
+    setShowMessageStatus(!showMessageStatus);
+  };
+
   const [CurrNodes, SetCurNodes] = useState([
-    { id: "N1", leftNeighbor: "N3", rightNeighbor: "N2", inboxSize: 2, inbox: ["Message 1", "Message 2"], store: [] },
-    { id: "N2", leftNeighbor: "N1", rightNeighbor: "N3", inboxSize: 2, inbox: ["Message 1"], store: [] },
-    { id: "N3", leftNeighbor: "N2", rightNeighbor: "N1", inboxSize: 3, inbox: [], store: [] },
+    { id: "N1", status: "Active", leftNeighbor: "N3", rightNeighbor: "N2", inboxSize: 2, inbox: ["Message 1", "Message 2"], store: [] },
+    { id: "N2", status: "Active", leftNeighbor: "N1", rightNeighbor: "N3", inboxSize: 2, inbox: ["Message 1"], store: [] },
+    { id: "N3", status: "Active",leftNeighbor: "N2", rightNeighbor: "N1", inboxSize: 3, inbox: [], store: [] },
   ]);
   const [nodeId, setNodeId] = useState("");
   const [leftNeighbor, setLeftNeighbor] = useState("");
@@ -47,6 +55,11 @@ const Mainpage = () => {
 
   const [showSendMessage, setShowSendMessage] = useState(true);
 
+  const validateMessageID = (messageID, senderNode) => {
+    const regex = new RegExp(`^${senderNode}\\d+$`); // Matches SenderID followed by one or more digits
+    return regex.test(messageID);
+};
+
 
   const handleShowDetails = (node) => {
 
@@ -57,12 +70,27 @@ const Mainpage = () => {
         inbox: node.inbox || [], // Ensure inbox is an array
         store: node.store || [], // Ensure store is an array
       };
+
     setSelectedNodeDetails(node); // Set the selected node for details view
     setSelectedAction("node-details");
   };
 
+  const toggleNodeStatus = (nodeId) => {
+    SetCurNodes((prevNodes) => 
+      prevNodes.map(node => 
+        node.id === nodeId ? { ...node, status: node.status === "Active" ? "Inactive" : "Active" } : node
+      )
+    );
+  };
+
   const handleSendMessage = (e) => {
     e.preventDefault();
+
+    // Validate Message ID format
+    if (!validateMessageID(MessageID, SenderID)) {
+      alert(`Message ID must be in the format '${SenderID}y' where y is unique.`);
+      return;
+    }
 
     setSentMessageDetails({
       message: Message,
@@ -77,14 +105,11 @@ const Mainpage = () => {
     setMessage("");
     setMessageID("");
     setDirection("");
+
     setTimeout(() => {
       setMessageSent(false);
       setShowSendMessage(true);
     }, 5000);
-  };
-
-  const addNode = (newNode) => {
-    SetCurNodes((prevNodes) => [...prevNodes, newNode]);
   };
 
   const handleDeleteNode = (e) => {
@@ -97,11 +122,13 @@ const Mainpage = () => {
     }
 
     // Check if the node ID exists
+  
     const nodeToDelete = CurrNodes.find(node => node.id === DelNodeId);
     if (!nodeToDelete) {
         alert("Node ID does not exist. Please enter a valid Node ID.");
         return; // Stop if the node does not exist
     }
+
 
     // Find left and right neighbors
     const leftNeighborId = nodeToDelete.leftNeighbor;
@@ -128,8 +155,6 @@ const Mainpage = () => {
     setDelNodeId("");
 
   };
-
-  
 
   const handleCreateNode = (e) => {
     e.preventDefault();
@@ -168,18 +193,19 @@ const Mainpage = () => {
       // Update nodes with new node
       SetCurNodes((prevNodes) => {
         // Update the neighbors' pointers correctly
-        const updatedNodes = prevNodes.map(node => {
-          if (node.id === leftNeighbor) {
-            return { ...node, rightNeighbor: nodeId };
+        const updatedNodes = prevNodes.map(prevNode => {
+          if (prevNode.id === leftNeighbor) {
+            return { ...prevNode, rightNeighbor: nodeId };
           }
-          if (node.id === rightNeighbor) {
-            return { ...node, leftNeighbor: nodeId };
+          if (prevNode.id === rightNeighbor) {
+            return { ...prevNode, leftNeighbor: nodeId };
           }
-          return node;
+          return prevNode;
         });
 
         // Add the new node
-        return [...updatedNodes, newNode];
+        updatedNodes.push(newNode);
+        return updatedNodes;
       });
     // Clear the input fields
     setNodeId("");
@@ -236,7 +262,7 @@ const Mainpage = () => {
         <div className="second-item left">
           <h2>Tasks</h2>
           <div className="dropdown-node-actions">
-            <label htmlFor="node-actions">Node Actions:</label>
+            <label htmlFor="node-actions">Node Actions: </label>
             <select
               id="node-actions"
               value={selectedAction}
@@ -257,7 +283,7 @@ const Mainpage = () => {
           </a>
 
           <div className="dropdown-create-delete-node">
-            <label htmlFor="create-delete-node">Create or Delete:</label>
+            <label htmlFor="create-delete-node">Create or Delete: </label>
             <select
               id="create-delete"
               value={selectedAction}
@@ -271,7 +297,7 @@ const Mainpage = () => {
         </div>
         <div className="second-item middle">
           <h1>Network Display</h1>
-          <RingNetworks nodes={CurrNodes} 
+          <RingNetwork nodes={CurrNodes} 
           deleteNode={handleDeleteNode}
           showDetails={handleShowDetails}/>
         </div>
@@ -285,32 +311,40 @@ const Mainpage = () => {
               <p><strong>Right Neighbor:</strong> {selectedNodeDetails.rightNeighbor}</p>
               <div>
                 <strong>Inbox:</strong>
-                <ul>
-                  {/* Check if inbox is defined and is an array before mapping */}
-                  {Array.isArray(selectedNodeDetails.inbox) && selectedNodeDetails.inbox.length > 0 ? (
-                    selectedNodeDetails.inbox.map((message, index) => (
-                      <li key={index}>{message}</li>
-                    ))
-                  ) : (
-                    <li>Inbox is empty</li>
-                  )}
-                </ul>
+                <select
+                  value={selectedInboxMessage}
+                  onChange={(e) => setSelectedInboxMessage(e.target.value)}
+                >
+                  <option value=""></option>
+                  {["Message 1", "Message 2", "Message 3"].map((message, index) => (
+                    <option key={index} value={message}>{message}</option>
+                  ))}
+                </select>
               </div>
               <div>
                 <strong>Store:</strong>
-                <ul>
-                  {/* Check if store is defined and is an array before mapping */}
-                  {Array.isArray(selectedNodeDetails.store) && selectedNodeDetails.store.length > 0 ? (
-                    selectedNodeDetails.store.map((message, index) => (
-                      <li key={index}>{message}</li>
-                    ))
-                  ) : (
-                    <li>Store is empty</li>
-                  )}
-                </ul>
+                <select
+                  value={selectedStoreMessage}
+                  onChange={(e) => setSelectedStoreMessage(e.target.value)}
+                >
+                  <option value=""></option>
+                {["Message 1", "Message 2", "Message 3"].map((message, index) => (
+                  <option key={index} value={message}>{message}</option>
+                ))}
+              </select>
+              <button 
+                onClick={() => navigate("/ArchivedStore")} // Adjust the route as needed
+              >
+                Archive Messages
+              </button>
               </div>
               <p><strong>Status:</strong> Active</p>
               <button onClick={() => handleDeleteNode(selectedNodeDetails.id)}>Delete</button>
+              {/* Message Status Button */}
+              <button onClick={handleToggleMessageStatus}>
+                Message Status
+              </button>
+              {showMessageStatus && <p>No messages</p>} {/* Conditional display */}
             </div>
           )}
           {selectedAction === "create-node" && (
@@ -350,7 +384,7 @@ const Mainpage = () => {
                     type="number"
                     value={inboxSize}
                     onChange={(e) => {
-                      const value = e.target.value;
+                      const value = parseInt(e.target.value);
                       if (value >= 0) {
                         setInboxSize(value);
                       }
@@ -433,16 +467,16 @@ const Mainpage = () => {
                     ))}
                   </select>
                 </div>
-
-                <div>
-                  <label>Direction:</label>
-                  <input
-                    type="text"
-                    value={Direction}
-                    onChange={(e) => setDirection(e.target.value)}
-                    required
-                  />
-                </div>
+                <label>Direction:</label>
+                <select
+                  value={Direction}
+                  onChange={(e) => setDirection(e.target.value)}
+                  required
+                >
+                  <option value="">-- Select Direction --</option>
+                  <option value="Left">Left</option>
+                  <option value="Right">Right</option>
+                </select>
                 <button type="submit">Send</button>
               </form>
             </div>
@@ -463,13 +497,21 @@ const Mainpage = () => {
 
           {selectedAction === "node-status" && (
             <div className="node-status-form">
+              <a
+            href="#Status"
+            className="node-status"
+            onClick={() => setSelectedAction("node-status")}
+          ></a>
               <h3>Node Status</h3>
 
               <div>
                 {CurrNodes.length > 0 ? (
                   CurrNodes.map((node) => (
                     <div key={node.id}>
-                      <p>{node.id} : Active</p>
+                      <p>{node.id} : {node.status}</p>
+                      <button onClick={() => toggleNodeStatus(node.id)}>
+                        {node.status === "Active" ? "Set Inactive" : "Set Active"}
+                      </button>
                     </div>
                   ))
                 ) : (

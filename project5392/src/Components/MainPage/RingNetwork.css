@@ -11,6 +11,8 @@ circle {
 
 text {
     font-weight: bold;
+    pointer-events: none; /* Prevent mouse events on text */
+    text-anchor: middle; /* Center the text horizontally */
 }
 .network-container {
     position: relative;

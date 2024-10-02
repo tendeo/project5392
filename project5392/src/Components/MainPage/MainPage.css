@@ -80,7 +80,7 @@
   .node-status {
     display: block;
     margin-top: 20px; /* Space between 'Node Actions' and 'Node Status' */
-    color: #007bff;
+    color: #000000;
     text-decoration: none; /* Remove underline */
   }
   
@@ -170,6 +170,13 @@
     align-items: center;
     font-weight: bold;
   }
+
+  .node-details {
+    margin-left: 20px; /* Adjust this value to shift left */
+    padding: 10px; /* Optional: Adjust padding as needed */
+    
+  }
+  
   
   /* Place nodes in a circular layout */
   .network-ring .node:nth-child(1) {
@@ -375,7 +382,7 @@
   }
   
   .button-container {
-    position: fixed; /* Fixed position to stick to the viewport */
+    position: absolute; /* Fixed position to stick to the viewport */
     bottom: 20px; /* Distance from the bottom */
     left: 50%; /* Center horizontally */
     transform: translateX(-50%); /* Adjust to center */
@@ -383,6 +390,12 @@
   }
   
   .system-buffer-link {
+    position: absolute;
+    width: 300px;
+    height: 50px;
+    bottom: 20px; /* Distance from the bottom */
+    left: 50%; /* Center horizontally */
+    transform: translateX(-50%); /* Adjust to center */
     color: red;
     padding: 10px 20px; /* Add padding for better click area */
     background-color: #fff; /* Background color for visibility */
@@ -393,6 +406,19 @@
   
   .system-buffer-link:hover {
     background-color: rgba(255, 0, 0, 0.1); /* Light red on hover */
+  }
+
+  .archive-messages-button {
+    margin-top: 10px;
+    padding: 10px 15px;
+    background-color: #007bff;
+    color: white;
+    border: none;
+    cursor: pointer;
+  }
+  
+  .archive-messages-button:hover {
+    background-color: #0056b3;
   }
 
 
