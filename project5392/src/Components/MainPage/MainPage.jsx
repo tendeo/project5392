@@ -25,9 +25,9 @@ const Mainpage = () => {
   const emailValidation = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
   const [CurrNodes, SetCurNodes] = useState([
-    { id: "N1", leftNeighbor: "N3", rightNeighbor: "N2", inboxSize: 3 },
-    { id: "N2", leftNeighbor: "N1", rightNeighbor: "N3", inboxSize: 3 },
-    { id: "N3", leftNeighbor: "N2", rightNeighbor: "N1", inboxSize: 3 },
+    { id: "N1", leftNeighbor: "N3", rightNeighbor: "N2", inboxSize: 2, inbox: ["Message 1", "Message 2"], store: [] },
+    { id: "N2", leftNeighbor: "N1", rightNeighbor: "N3", inboxSize: 2, inbox: ["Message 1"], store: [] },
+    { id: "N3", leftNeighbor: "N2", rightNeighbor: "N1", inboxSize: 3, inbox: [], store: [] },
   ]);
   const [nodeId, setNodeId] = useState("");
   const [leftNeighbor, setLeftNeighbor] = useState("");
@@ -35,6 +35,8 @@ const Mainpage = () => {
   const [inboxSize, setInboxSize] = useState("");
 
   const [DelNodeId, setDelNodeId] = useState("");
+
+  const [selectedNodeDetails, setSelectedNodeDetails] = useState(null);
 
   const location = useLocation();
   const username = location.state?.username || "Guest";
@@ -44,6 +46,20 @@ const Mainpage = () => {
   const [sentMessageDetails, setSentMessageDetails] = useState({});
 
   const [showSendMessage, setShowSendMessage] = useState(true);
+
+
+  const handleShowDetails = (node) => {
+
+    const nodeDetails = {
+        id: node.id,
+        leftNeighbor: node.leftNeighbor || "Unknown",
+        rightNeighbor: node.rightNeighbor || "Unknown",
+        inbox: node.inbox || [], // Ensure inbox is an array
+        store: node.store || [], // Ensure store is an array
+      };
+    setSelectedNodeDetails(node); // Set the selected node for details view
+    setSelectedAction("node-details");
+  };
 
   const handleSendMessage = (e) => {
     e.preventDefault();
@@ -68,7 +84,7 @@ const Mainpage = () => {
   };
 
   const handleDeleteNode = (e) => {
-    e.preventDefault();
+    //e.preventDefault();
 
     // Check if there are only 3 nodes
     if (CurrNodes.length <= 3) {
@@ -108,6 +124,8 @@ const Mainpage = () => {
     setDelNodeId("");
 
   };
+
+  
 
   const handleCreateNode = (e) => {
     e.preventDefault();
@@ -252,10 +270,48 @@ const Mainpage = () => {
         </div>
         <div className="second-item middle">
           <h1>Network Display</h1>
-          <RingNetwork nodes={CurrNodes} />
+          <RingNetwork nodes={CurrNodes} 
+          deleteNode={handleDeleteNode}
+          showDetails={handleShowDetails}/>
         </div>
         <div className="second-item right">
           <h2>Dialogue Space</h2>
+          {selectedAction === "node-details" && selectedNodeDetails && (
+            <div className="node-details">
+              <h3>Node Details</h3>
+              <p><strong>Node ID:</strong> {selectedNodeDetails.id}</p>
+              <p><strong>Left Neighbor:</strong> {selectedNodeDetails.leftNeighbor}</p>
+              <p><strong>Right Neighbor:</strong> {selectedNodeDetails.rightNeighbor}</p>
+              <div>
+                <strong>Inbox:</strong>
+                <ul>
+                  {/* Check if inbox is defined and is an array before mapping */}
+                  {Array.isArray(selectedNodeDetails.inbox) && selectedNodeDetails.inbox.length > 0 ? (
+                    selectedNodeDetails.inbox.map((message, index) => (
+                      <li key={index}>{message}</li>
+                    ))
+                  ) : (
+                    <li>Inbox is empty</li>
+                  )}
+                </ul>
+              </div>
+              <div>
+                <strong>Store:</strong>
+                <ul>
+                  {/* Check if store is defined and is an array before mapping */}
+                  {Array.isArray(selectedNodeDetails.store) && selectedNodeDetails.store.length > 0 ? (
+                    selectedNodeDetails.store.map((message, index) => (
+                      <li key={index}>{message}</li>
+                    ))
+                  ) : (
+                    <li>Store is empty</li>
+                  )}
+                </ul>
+              </div>
+              <p><strong>Status:</strong> Active</p>
+              <button onClick={() => handleDeleteNode(selectedNodeDetails.id)}>Delete</button>
+            </div>
+          )}
           {selectedAction === "create-node" && (
             <div className="create-node-form">
               <h3>Create a Node</h3>
