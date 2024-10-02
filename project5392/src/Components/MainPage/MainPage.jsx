@@ -5,7 +5,7 @@ import { useNavigate } from "react-router-dom";
 
 import Messagecreated from "../Parts/MessageCreated";
 
-import RingNetwork from "../../RingNetwork";
+import RingNetworks from "../MainPage/RingNetwork";
 
 const Mainpage = () => {
   const [selectedAction, setSelectedAction] = useState("");
@@ -81,6 +81,10 @@ const Mainpage = () => {
       setMessageSent(false);
       setShowSendMessage(true);
     }, 5000);
+  };
+
+  const addNode = (newNode) => {
+    SetCurNodes((prevNodes) => [...prevNodes, newNode]);
   };
 
   const handleDeleteNode = (e) => {
@@ -160,25 +164,22 @@ const Mainpage = () => {
 
     // Create a new node object
     const newNode = { id: nodeId, leftNeighbor, rightNeighbor, inboxSize };
+
       // Update nodes with new node
       SetCurNodes((prevNodes) => {
         // Update the neighbors' pointers correctly
-        const updatedNodes = prevNodes.map(prevNode => {
-          if (prevNode.id === leftNeighbor) {
-            return { ...prevNode, rightNeighbor: nodeId };
+        const updatedNodes = prevNodes.map(node => {
+          if (node.id === leftNeighbor) {
+            return { ...node, rightNeighbor: nodeId };
           }
-          if (prevNode.id === rightNeighbor) {
-            return { ...prevNode, leftNeighbor: nodeId };
+          if (node.id === rightNeighbor) {
+            return { ...node, leftNeighbor: nodeId };
           }
-
-          return prevNode;
+          return node;
         });
-        
 
         // Add the new node
-        updatedNodes.push(newNode);
-        return updatedNodes;
-
+        return [...updatedNodes, newNode];
       });
     // Clear the input fields
     setNodeId("");
@@ -235,7 +236,7 @@ const Mainpage = () => {
         <div className="second-item left">
           <h2>Tasks</h2>
           <div className="dropdown-node-actions">
-            <label htmlFor="node-actions">Node Actions: </label>
+            <label htmlFor="node-actions">Node Actions:</label>
             <select
               id="node-actions"
               value={selectedAction}
@@ -256,7 +257,7 @@ const Mainpage = () => {
           </a>
 
           <div className="dropdown-create-delete-node">
-            <label htmlFor="create-delete-node">Create or Delete: </label>
+            <label htmlFor="create-delete-node">Create or Delete:</label>
             <select
               id="create-delete"
               value={selectedAction}
@@ -270,7 +271,7 @@ const Mainpage = () => {
         </div>
         <div className="second-item middle">
           <h1>Network Display</h1>
-          <RingNetwork nodes={CurrNodes} 
+          <RingNetworks nodes={CurrNodes} 
           deleteNode={handleDeleteNode}
           showDetails={handleShowDetails}/>
         </div>
@@ -349,7 +350,7 @@ const Mainpage = () => {
                     type="number"
                     value={inboxSize}
                     onChange={(e) => {
-                      const value = parseInt(e.target.value);
+                      const value = e.target.value;
                       if (value >= 0) {
                         setInboxSize(value);
                       }
