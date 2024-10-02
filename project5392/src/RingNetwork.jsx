@@ -1,7 +1,8 @@
 import React from 'react';
 import './RingNetwork.css'; // CSS for styling
 
-const RingNetworks = ({ nodes }) => {
+const RingNetwork = ({ nodes }) => {
+
     const radius = 150; // Radius of the circle
     const centerX = 200; // Center X coordinate
     const centerY = 200; // Center Y coordinate
@@ -71,4 +72,4 @@ const RingNetworks = ({ nodes }) => {
     );
 };
 
-export default RingNetworks;
+export default RingNetwork;
