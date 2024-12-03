@@ -7,6 +7,8 @@ import Messagecreated from "../Parts/MessageCreated";
 
 import RingNetwork from "../MainPage/RingNetwork";
 
+import NodeClient from "../../Clients/NodeClient";
+
 const Mainpage = () => {
   const [selectedAction, setSelectedAction] = useState("");
 
@@ -15,6 +17,7 @@ const Mainpage = () => {
   const [ReceiverID, setReceiverID] = useState();
   const [SenderID, setSenderID] = useState();
   const [Direction, setDirection] = useState("");
+  const [CurrNodes, SetCurNodes] = useState("");
 
   const [Accounts, SetAccounts] = useState([]);
   const [FirstName, setFirstName] = useState("");
@@ -24,6 +27,8 @@ const Mainpage = () => {
 
   const emailValidation = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
+  const nodeClient = new NodeClient();
+
   const [selectedInboxMessage, setSelectedInboxMessage] = useState("");
   const [selectedStoreMessage, setSelectedStoreMessage] = useState("");
   const [showMessageStatus, setShowMessageStatus] = useState(false);
@@ -32,14 +37,32 @@ const Mainpage = () => {
     setShowMessageStatus(!showMessageStatus);
   };
 
-  const [CurrNodes, SetCurNodes] = useState(() => {
-    const savedNodes = localStorage.getItem("nodes");
-    return savedNodes ? JSON.parse(savedNodes) : [
-      { id: "N1", status: "Active", leftNeighbor: "N3", rightNeighbor: "N2", inboxSize: 2, inbox: ["Message 1", "Message 2"], store: [] },
-      { id: "N2", status: "Active", leftNeighbor: "N1", rightNeighbor: "N3", inboxSize: 2, inbox: ["Message 1"], store: [] },
-      { id: "N3", status: "Active", leftNeighbor: "N2", rightNeighbor: "N1", inboxSize: 3, inbox: [], store: [] },
-    ];
-  });
+  useEffect(() => {
+    const getNodes = async () => {
+      try {
+        console.log("in the use effect on main page and trying to fetch the nodes");
+        const fetchedNodes = await nodeClient.getNodes();
+        console.log(fetchedNodes);
+        SetCurNodes(fetchedNodes);
+      } catch (error) {
+        console.error('Error fetching data:', error);
+      }
+    };
+  
+    getNodes();  // Trigger the API call when the component mounts
+  }, []);
+
+
+  // const [CurrNodes, SetCurNodes] = useState(() => {
+  //   const savedNodes = localStorage.getItem("nodes");
+    
+    
+  //   return savedNodes ? JSON.parse(savedNodes) : [
+  //     { id: "N1", status: "Active", leftNeighbor: "N3", rightNeighbor: "N2", inboxSize: 2, inbox: ["Message 1", "Message 2"], store: [] },
+  //     { id: "N2", status: "Active", leftNeighbor: "N1", rightNeighbor: "N3", inboxSize: 2, inbox: ["Message 1"], store: [] },
+  //     { id: "N3", status: "Active", leftNeighbor: "N2", rightNeighbor: "N1", inboxSize: 3, inbox: [], store: [] },
+  //   ];
+  // });
 
   const [nodeId, setNodeId] = useState("");
   const [leftNeighbor, setLeftNeighbor] = useState("");
@@ -152,6 +175,47 @@ const Mainpage = () => {
       });
     // Clear the delete input field
     setDelNodeId("");
+
+  };
+
+  const handleDirectDeleteNode = (nodeId) => {
+
+    if (CurrNodes.length <= 3) {
+      alert("Cannot delete a node when there are only 3 nodes.");
+      return; // Stop if the count is too low
+    }
+
+    SetCurNodes((prevNodes) => {
+
+      // First, update the neighboring nodes
+      const nodeToDelete = prevNodes.find(node => node.id === nodeId);
+      if (nodeToDelete) {
+
+        const leftNeighborId = nodeToDelete.leftNeighbor;
+
+        const rightNeighborId = nodeToDelete.rightNeighbor;
+
+        // Update pointers of neighboring nodes
+
+        const updatedNodes = prevNodes.map(node => {
+
+          if (node.id === leftNeighborId) return { ...node, rightNeighbor: rightNeighborId };
+
+          if (node.id === rightNeighborId) return { ...node, leftNeighbor: leftNeighborId };
+
+          return node;
+
+        });
+        // Filter out the node being deleted
+
+        return updatedNodes.filter(node => node.id !== nodeId);
+      }
+      return prevNodes;
+    });
+
+    setSelectedNodeDetails(null); // Reset node details
+
+    setSelectedAction(""); // Reset action state
 
   };
 
@@ -303,9 +367,7 @@ const Mainpage = () => {
         </div>
         <div className="second-item middle">
           <h1>Network Display</h1>
-          <RingNetwork nodes={CurrNodes} 
-          deleteNode={handleDeleteNode}
-          showDetails={handleShowDetails}/>
+          <RingNetwork nodes={CurrNodes} deleteNode={handleDeleteNode} showDetails={handleShowDetails} />
         </div>
         <div className="second-item right">
           <h2>Dialogue Space</h2>
@@ -339,13 +401,14 @@ const Mainpage = () => {
                 ))}
               </select>
               <button 
-                onClick={() => navigate("/ArchivedStore")} // Adjust the route as needed
+                onClick={() => navigate("/ArchivedStore")} // added deleteNode Adjust the route as needed
               >
                 Archive Messages
               </button>
               </div>
               <p><strong>Status:</strong> Active</p>
-              <button onClick={() => handleDeleteNode(selectedNodeDetails.id)}>Delete</button>
+              <button onClick={() => {handleDeleteNode(selectedNodeDetails.id);
+               deleteNode(selectedNodeDetails.id)}}>Delete</button>
               {/* Message Status Button */}
               <button onClick={handleToggleMessageStatus}>
                 Message Status
@@ -395,7 +458,7 @@ const Mainpage = () => {
                         setInboxSize(value);
                       }
                     }}
-                    min="0"
+                    min="1"
                     required
                   />
                 </div>
@@ -405,7 +468,7 @@ const Mainpage = () => {
           )}
           {selectedAction === "delete-node" && (
             <div className="delete-node-form">
-              <h3>delete a Node</h3>
+              <h3>Delete a Node</h3>
               <form onSubmit={handleDeleteNode}>
                 <div>
                   <label>Node ID:</label>

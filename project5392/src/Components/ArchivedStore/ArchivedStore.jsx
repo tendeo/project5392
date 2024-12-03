@@ -26,7 +26,7 @@ const ArchivedStore = () => {
         >
           Back
         </button>
-        <h1 className="system-buffer-title">Archived System Buffer</h1>
+        <h1 className="system-buffer-title">Archived Store</h1>
         <div className="undelivered-messages">
           <h2>Messages</h2>
           {Array.from({ length: 4 }, (_, index) => ( // Change 4 to your desired buffer size

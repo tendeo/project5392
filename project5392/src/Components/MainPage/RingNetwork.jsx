@@ -1,7 +1,38 @@
 import React, { useState } from "react";
 import "./RingNetwork.css"; // CSS for styling
+import Node from "../../Models/Node";
 
-const RingNetwork = ({ nodes, deleteNode, showDetails }) => {
+const RingNetwork = ({ nodes = [], deleteNode, showDetails }) => {
+
+  console.log("inside of RingNetwork the nodes array is " + JSON.stringify(nodes));
+  console.log('Is nodes an array?', Array.isArray(nodes));
+  console.log(nodes[0].props);
+  console.log(nodes[0].props.nodeID);
+
+  const nodesCopy = nodes
+  const nodeInstances = nodes.map(node => {
+    console.log(node);  // Check if node.props exists and is in the correct structure
+    if (node && node.props) {
+      return new Node(
+        node.props.nodeID,
+        node.props.networkID,
+        node.props.leftNeighborID,
+        node.props.rightNeighborID,
+        node.props.inboxID,
+        node.props.storeID,
+        node.props.status
+      );
+    }
+    return null;
+  }).filter(node => node !== null);
+
+
+  // console.log("the array of nodes is " + nodeInstances);
+  // console.log("inside of nodes the nodes array is " + JSON.stringify(nodeInstances));
+  // console.log('Is nodeInstances an array?', Array.isArray(nodeInstances));
+  
+
+
   const radius = 150; // Radius of the circle
   const centerX = 200; // Center X coordinate
   const centerY = 200; // Center Y coordinate
@@ -24,7 +55,7 @@ const RingNetwork = ({ nodes, deleteNode, showDetails }) => {
   // Sort nodes based on their neighbors to form a proper ring
   while (current && sortedNodes.length < nodes.length) {
     sortedNodes.push(current);
-    current = nodes.find((node) => node.id === current.rightNeighbor);
+    current = nodes.find((node) => node.nodeID === current.rightNeighbor);
   }
 
   return (
@@ -35,7 +66,7 @@ const RingNetwork = ({ nodes, deleteNode, showDetails }) => {
           const { x, y } = calculatePositions(index, sortedNodes.length);
           return (
             <g
-              key={node.id}
+              key={node.nodeID}
               transform={`translate(${x}, ${y})`}
               onClick={() => setSelectedNode(node)} // Set the clicked node as selected
               style={{ cursor: "pointer" }} // Change cursor to pointer on hover
@@ -49,7 +80,7 @@ const RingNetwork = ({ nodes, deleteNode, showDetails }) => {
                 fill="white"
                 fontSize="12px"
               >
-                {node.id}
+                {node.nodeID}
               </text>
             </g>
           );
@@ -66,7 +97,7 @@ const RingNetwork = ({ nodes, deleteNode, showDetails }) => {
 
           return (
             <line
-              key={`${node.id}-${nextNode.id}`}
+              key={`${node.nodeID}-${nextNode.nodeID}`}
               x1={x}
               y1={y}
               x2={nextX}
@@ -93,7 +124,7 @@ const RingNetwork = ({ nodes, deleteNode, showDetails }) => {
             zIndex: 10,
           }}
         >
-          <h3>Node ID: {selectedNode.id}</h3>
+          <h3>Node ID: {selectedNode.nodeID}</h3>
           <button
             className="details-button"
             onClick={() => showDetails(selectedNode)}
@@ -103,7 +134,7 @@ const RingNetwork = ({ nodes, deleteNode, showDetails }) => {
           <button
             className="delete-button"
             onClick={() => {
-              console.log("Deleting Node ID:", selectedNode.id); // Log the ID
+              console.log("Deleting Node ID:", selectedNode.nodeID); // Log the ID
               deleteNode(selectedNode);
               setSelectedNode(null);
             }}
