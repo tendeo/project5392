@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import './LoginForm.css';
 
-import { FaUser, FaLock } from "react-icons/fa";
+import { FaUser, FaLock, FaClosedCaptioning } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
 
 const LoginForm = () => {
@@ -19,21 +19,23 @@ const LoginForm = () => {
         //To do: Once backend complete, validate user info before routing
         //Otherwise: give error message "Invalid user"
         if (selectedRole === "Admin") {
-            navigate("/MainPage", { state: { username } });
+            navigate("/MainPage", { state: { username, password } });
         } else if (selectedRole === "Operator") {
-            navigate("/OperatorMainPage", { state: { username } });
+            navigate("/OperatorMainPage", { state: { username, password } });
         }
     };
 
     const handlePasswordValidation = (e) => {
         const newPassword = e.target.value;
         setPassword(newPassword);
+        console.log("new password is ",  password);
         setIsValid(passwordValidation.test(newPassword))
     };
 
     return (
         <div className="wrapper">
-            <form onSubmit={handleLogin}>
+                <h1 className="login-title">CS5392 Communication Network</h1>
+                <form onSubmit={handleLogin}>
                 <h1>Login</h1>
                 <div className="input-box">
                     <input type="text" 

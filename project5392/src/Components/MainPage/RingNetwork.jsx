@@ -1,37 +1,40 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import "./RingNetwork.css"; // CSS for styling
-import Node from "../../Models/Node";
-
-const RingNetwork = ({ nodes = [], deleteNode, showDetails }) => {
-
-  console.log("inside of RingNetwork the nodes array is " + JSON.stringify(nodes));
-  console.log('Is nodes an array?', Array.isArray(nodes));
-  console.log(nodes[0].props);
-  console.log(nodes[0].props.nodeID);
-
-  const nodesCopy = nodes
-  const nodeInstances = nodes.map(node => {
-    console.log(node);  // Check if node.props exists and is in the correct structure
-    if (node && node.props) {
-      return new Node(
-        node.props.nodeID,
-        node.props.networkID,
-        node.props.leftNeighborID,
-        node.props.rightNeighborID,
-        node.props.inboxID,
-        node.props.storeID,
-        node.props.status
-      );
-    }
-    return null;
-  }).filter(node => node !== null);
 
 
-  // console.log("the array of nodes is " + nodeInstances);
-  // console.log("inside of nodes the nodes array is " + JSON.stringify(nodeInstances));
-  // console.log('Is nodeInstances an array?', Array.isArray(nodeInstances));
+
+const RingNetwork = ({ nodes, deleteNode, showDetails }) => {
+
+  console.log("inside of RingNetwork the nodes array is " + nodes);
   
+  useEffect(() => { console.log("RENDERING RING NETWORK")}, []);
 
+    // Step 2: Find the starting node (first node)
+    console.log("before start node nodes is ", nodes);
+    console.log("start node should be ", nodes[0]);
+  //const startNode = nodes.find(node => node.leftNeighbor === null); // Assuming the first node has no left neighbor
+  const startNode = nodes.length > 0 ? nodes[0] : null; // Start with the first node in the list
+  
+  console.log("start node " + JSON.stringify(startNode));
+
+  // Step 3: Sort nodes based on their rightNeighbor link
+  const sortedNodes = [];
+  let currentNode = startNode;
+
+  // Step 4: Traverse through the nodes based on rightNeighbor and form the ring
+  while (currentNode) {
+
+    sortedNodes.push(currentNode);
+
+    // next node should be the node whose id is the current's right neighbor (clocl)
+    const nextNode = nodes.find((node) => node.nodeID === currentNode.rightNeighborID);
+    console.log("next node", nextNode)
+
+    if (nextNode === startNode) break; // If we loop back to the start node, stop
+    currentNode = nextNode;
+  }
+
+  console.log("sorted nodes size ", sortedNodes.length);
 
   const radius = 150; // Radius of the circle
   const centerX = 200; // Center X coordinate
@@ -48,27 +51,21 @@ const RingNetwork = ({ nodes = [], deleteNode, showDetails }) => {
     return { x, y };
   };
 
-  // Maintain a sorted order of nodes based on their connectivity
-  const sortedNodes = [];
-  let current = nodes.length > 0 ? nodes[0] : null; // Start with the first node in the list
-
-  // Sort nodes based on their neighbors to form a proper ring
-  while (current && sortedNodes.length < nodes.length) {
-    sortedNodes.push(current);
-    current = nodes.find((node) => node.nodeID === current.rightNeighbor);
-  }
-
   return (
     <div className="network-container">
       <svg width="400" height="400">
         {/* Draw nodes in their calculated positions */}
         {sortedNodes.map((node, index) => {
           const { x, y } = calculatePositions(index, sortedNodes.length);
+          console.log("node: " + JSON.stringify(node) + " x: " + x + " y: " + y);
           return (
             <g
               key={node.nodeID}
               transform={`translate(${x}, ${y})`}
-              onClick={() => setSelectedNode(node)} // Set the clicked node as selected
+              onClick={() => {
+                setSelectedNode(node)
+                console.log("node on click setting selected node ", node);
+              }} // Set the clicked node as selected
               style={{ cursor: "pointer" }} // Change cursor to pointer on hover
             >
               <circle r="20" fill="blue" />
@@ -127,7 +124,11 @@ const RingNetwork = ({ nodes = [], deleteNode, showDetails }) => {
           <h3>Node ID: {selectedNode.nodeID}</h3>
           <button
             className="details-button"
-            onClick={() => showDetails(selectedNode)}
+            onClick={() => {
+              console.log("selected node", selectedNode);
+              showDetails(selectedNode);
+              
+            }}
           >
             Show Details
           </button>

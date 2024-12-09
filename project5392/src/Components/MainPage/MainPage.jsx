@@ -2,12 +2,17 @@ import React, { useState, useEffect } from "react";
 import "./MainPage.css";
 import { useLocation } from "react-router-dom";
 import { useNavigate } from "react-router-dom";
+import { isEmpty } from "lodash";
 
 import Messagecreated from "../Parts/MessageCreated";
 
 import RingNetwork from "../MainPage/RingNetwork";
 
 import NodeClient from "../../Clients/NodeClient";
+
+import UserClient from "../../Clients/UserClient";
+
+
 
 const Mainpage = () => {
   const [selectedAction, setSelectedAction] = useState("");
@@ -20,14 +25,15 @@ const Mainpage = () => {
   const [CurrNodes, SetCurNodes] = useState("");
 
   const [Accounts, SetAccounts] = useState([]);
-  const [FirstName, setFirstName] = useState("");
-  const [LastName, setLastName] = useState("");
-  const [Type, setType] = useState();
-  const [Email, setEmail] = useState("");
+  const [submittedFirstName, setSubmittedFirstName] = useState("");
+  const [submittedLastName, setSubmittedLastName] = useState("");
+  const [submittedType, setSubmittedType] = useState();
+  const [submittedEmail, setSubmittedEmail] = useState("");
 
   const emailValidation = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-
-  const nodeClient = new NodeClient();
+  const location = useLocation();
+  const nodeClient = new NodeClient(location.state?.username, location.state?.password);
+  const userClient = new UserClient(location.state?.username, location.state?.password);
 
   const [selectedInboxMessage, setSelectedInboxMessage] = useState("");
   const [selectedStoreMessage, setSelectedStoreMessage] = useState("");
@@ -52,6 +58,125 @@ const Mainpage = () => {
     getNodes();  // Trigger the API call when the component mounts
   }, []);
 
+  const createNode = async (node) => {
+    console.log("attempting to create a node!", node);
+    try {
+
+      const createdNode = await nodeClient.createOrUpdateNode(node);
+      
+      // update the pointer and update the curr nodes
+      SetCurNodes((prevNodes) => {
+        const updatedNodes = prevNodes.map(prevNode => {
+          console.log("prevNode is ", prevNode);
+          console.log("submitted left neighbhor ", submittedLeftNeighbor);
+          console.log("submitted right neighbhor ", submittedRightNeighbor);
+          if (prevNode.nodeID === submittedLeftNeighbor) {
+            return { ...prevNode, rightNeighborID: submittedNodeID };
+          }
+          if (prevNode.nodeID === submittedRightNeighbor) {
+            return { ...prevNode, leftNeighborID: submittedNodeID };
+          }
+          return prevNode;
+        }).concat(createdNode);
+        localStorage.setItem("nodes", JSON.stringify(updatedNodes)); // Save to localStorage
+        console.log("updatedNodes in create node is ", updatedNodes);
+        return updatedNodes;
+      });
+
+
+    } catch (error) {
+      console.error('Error creating node:', error);
+    }
+  }
+
+  const deleteNode = async (nodeID) => {
+    console.log("attempting to delete a node!", nodeID);
+    try {
+
+      const deletedNode = await nodeClient.deleteNode(nodeID);
+
+       // Find left and right neighbors
+      const nodeToDelete = CurrNodes.find(node => node.nodeID === submittedDeleteNodeId);
+      const leftNeighborId = nodeToDelete.leftNeighborID;
+      const rightNeighborId = nodeToDelete.rightNeighborID;
+
+      console.log("my node I wanna delete's left neighhir is ", leftNeighborId);
+      console.log("my node I wanna delete's right neighhir is ", rightNeighborId);
+
+      // Update neighbors' pointers and remove the deleted node
+      SetCurNodes((prevNodes) => {
+        const updatedNodes = prevNodes.map((node) => {
+          if (node.nodeID === leftNeighborId) {
+            return { ...node, rightNeighborID: rightNeighborId };
+          }
+          if (node.nodeID === rightNeighborId) {
+            return { ...node, leftNeighborID: leftNeighborId };
+          }
+          return node;
+        }).filter(node => node.nodeID !== deletedNode.nodeID);
+        localStorage.setItem("nodes", JSON.stringify(updatedNodes)); // Save to localStorage
+        console.log("The updated nodes after deletion is ", updatedNodes);
+        return updatedNodes;
+      });
+
+
+    } catch (error) {
+      console.error('Error creating node:', error);
+    }
+  }
+
+  const createAccount = async (account) => {
+    // grab the account object you made
+
+    // try catch block (see above for exmaples)
+
+    // call nodeClient.creatOrUpdateUser(account)
+    // createdNewUser = await userClient.createOrUpdateUser(account)
+
+    // now we need to updated the accounts state var
+    // SetAccounts((existingAccounts) => [...existingAccounts, createdNewUser]);
+
+    console.log("attempting to create a user!", account);
+    try {
+
+      const createdNewUser = await userClient.createUser(account);
+
+      //add created user to user list
+
+      console.log("user I tieed to make is ", createdNewUser);
+      console.log("existing accounts ", Accounts );
+      SetAccounts((existingAccounts) => [...existingAccounts, createdNewUser]);
+
+      console.log("and now account is ", Accounts);
+
+    } catch (error) {
+      console.error('Error creating new user:', error);
+    }
+
+  }
+
+  const deleteAccount = async (account) => {
+    console.log("attempting to delete a user!", account);
+    try {
+
+     const deletedUser = await userClient.deleteUser(account);
+
+
+    
+      if (deletedUser) {
+      // Update the accounts list in the state to remove the deleted user
+        SetAccounts((prevAccounts) =>
+        prevAccounts.filter((acc) => acc.userName !== account.userName)
+      );
+    }
+
+    } catch (error) {
+      console.error('Error deleting user:', error);
+    }
+
+  }
+
+
 
   // const [CurrNodes, SetCurNodes] = useState(() => {
   //   const savedNodes = localStorage.getItem("nodes");
@@ -64,13 +189,15 @@ const Mainpage = () => {
   //   ];
   // });
 
-  const [nodeId, setNodeId] = useState("");
-  const [leftNeighbor, setLeftNeighbor] = useState("");
-  const [rightNeighbor, setRightNeighbor] = useState("");
-  const [inboxSize, setInboxSize] = useState("");
-  const [DelNodeId, setDelNodeId] = useState("");
+  console.log("CURR NODES IN MAIN PAGE IS ", CurrNodes);
+
+  const [submittedNodeID, setSubmittedNodeID] = useState("");
+  const [submittedLeftNeighbor, setSubmittedLeftNeighbor] = useState("");
+  const [submittedRightNeighbor, setSubmittedRightNeighbor] = useState("");
+  const [submittedInboxSize, setSubmittedInboxSize] = useState("");
+  const [submittedDeleteNodeId, setSubmittedDeleteNodeId] = useState("");
   const [selectedNodeDetails, setSelectedNodeDetails] = useState(null);
-  const location = useLocation();
+  
   const username = location.state?.username || "Guest";
   const navigate = useNavigate();
   const [messageSent, setMessageSent] = useState(false);
@@ -85,15 +212,6 @@ const Mainpage = () => {
 
 
   const handleShowDetails = (node) => {
-
-    const nodeDetails = {
-        id: node.id,
-        leftNeighbor: node.leftNeighbor || "Unknown",
-        rightNeighbor: node.rightNeighbor || "Unknown",
-        inbox: node.inbox || [], // Ensure inbox is an array
-        store: node.store || [], // Ensure store is an array
-      };
-
     setSelectedNodeDetails(node); // Set the selected node for details view
     setSelectedAction("node-details");
   };
@@ -148,33 +266,17 @@ const Mainpage = () => {
 
     // Check if the node ID exists
   
-    const nodeToDelete = CurrNodes.find(node => node.id === DelNodeId);
+    const nodeToDelete = CurrNodes.find(node => node.nodeID === submittedDeleteNodeId);
     if (!nodeToDelete) {
         alert("Node ID does not exist. Please enter a valid Node ID.");
         return; // Stop if the node does not exist
     }
 
+    deleteNode(submittedDeleteNodeId);
 
-    // Find left and right neighbors
-    const leftNeighborId = nodeToDelete.leftNeighbor;
-    const rightNeighborId = nodeToDelete.rightNeighbor;
-
-      // Update neighbors' pointers and remove the deleted node
-      SetCurNodes((prevNodes) => {
-        const updatedNodes = prevNodes.map((node) => {
-          if (node.id === leftNeighborId) {
-            return { ...node, rightNeighbor: rightNeighborId };
-          }
-          if (node.id === rightNeighborId) {
-            return { ...node, leftNeighbor: leftNeighborId };
-          }
-          return node;
-        }).filter(node => node.id !== DelNodeId);
-        localStorage.setItem("nodes", JSON.stringify(updatedNodes)); // Save to localStorage
-        return updatedNodes;
-      });
+   
     // Clear the delete input field
-    setDelNodeId("");
+    setSubmittedDeleteNodeId("");
 
   };
 
@@ -222,6 +324,8 @@ const Mainpage = () => {
   const handleCreateNode = (e) => {
     e.preventDefault();
 
+    console.log("CurrNodes ", CurrNodes);
+
     // Check if there are already 10 nodes
     if (CurrNodes.length >= 10) {
       alert("Cannot create a node when there are already 10 nodes.");
@@ -230,85 +334,120 @@ const Mainpage = () => {
 
     // Validation for node ID format
     const nodeFormat = /^N\d+$/; // Regex for Nx where x is a number
-    if (!nodeFormat.test(nodeId)) {
+    console.log("trya create this", submittedNodeID);
+    if (!nodeFormat.test(submittedNodeID)) {
       alert("Node ID must be in the format 'Nx' where x is a number.");
       return; // Stop if the format is invalid
     }
 
     // Check if node ID already exists
-    const nodeExists = CurrNodes.some(node => node.id === nodeId);
+    const nodeExists = CurrNodes.some(node => node.nodeID === submittedNodeID);
     if (nodeExists) {
         alert("Node ID already exists. Please use a unique ID.");
         return; // Stop if the ID already exists
     }
 
     // Check if left and right neighbors exist
-    const leftNeighborExists = CurrNodes.some(node => node.id === leftNeighbor);
-    const rightNeighborExists = CurrNodes.some(node => node.id === rightNeighbor);
+    const leftNeighborExists = CurrNodes.some(node => node.nodeID === submittedLeftNeighbor);
+    const rightNeighborExists = CurrNodes.some(node => node.nodeID === submittedRightNeighbor);
     if (!leftNeighborExists || !rightNeighborExists) {
         alert("Both left and right neighbors must exist in the current nodes.");
         return; // Stop if neighbors do not exist
     }
 
     // Create a new node object
-    const newNode = { id: nodeId, leftNeighbor, rightNeighbor, inboxSize };
+    const newNode = {
+      nodeID: submittedNodeID,          // Example Node ID (String)
+      networkID: 'network',    // Example Network ID (String)
+      leftNeighborID: submittedLeftNeighbor,  // Example Left Neighbor ID (String, optional)
+      rightNeighborID: submittedRightNeighbor, // Example Right Neighbor ID (String, optional)
+      // inboxID: 'testInboxID',        // Example Inbox ID (String, optional)
+      // storeID: 'testStoreID',        // Example Store ID (String, optional)
+      status: true,               // Example Status (Boolean)
+    };
+    // const newNode = { id: submittedNodeID, leftNeighbor: submittedLeftNeighbor, rightNeighbor: submittedRightNeighbor, inboxSize: submittedInboxSize };
 
-    SetCurNodes((prevNodes) => {
-      const updatedNodes = prevNodes.map(prevNode => {
-        if (prevNode.id === leftNeighbor) {
-          return { ...prevNode, rightNeighbor: nodeId };
-        }
-        if (prevNode.id === rightNeighbor) {
-          return { ...prevNode, leftNeighbor: nodeId };
-        }
-        return prevNode;
-      }).concat(newNode);
-      localStorage.setItem("nodes", JSON.stringify(updatedNodes)); // Save to localStorage
-      return updatedNodes;
-    });
+
+    // Try to create the node with the API
+    createNode(newNode);
+
+    console.log("AFTER CREATE NODE HERE IS CURRNODES", CurrNodes);
+
+    // Get the new nodes list frome the API and set curr nodes here
+
+
+    // SetCurNodes((prevNodes) => {
+    //   const updatedNodes = prevNodes.map(prevNode => {
+    //     if (prevNode.id === submittedLeftNeighbor) {
+    //       return { ...prevNode, rightNeighbor: submittedNodeID };
+    //     }
+    //     if (prevNode.id === submittedRightNeighbor) {
+    //       return { ...prevNode, leftNeighbor: submittedNodeID };
+    //     }
+    //     return prevNode;
+    //   }).concat(newNode);
+    //   localStorage.setItem("nodes", JSON.stringify(updatedNodes)); // Save to localStorage
+    //   return updatedNodes;
+    // });
 
     // Clear the input fields
-    setNodeId("");
-    setLeftNeighbor("");
-    setRightNeighbor("");
-    setInboxSize("");
+    setSubmittedNodeID("");
+    setSubmittedLeftNeighbor("");
+    setSubmittedRightNeighbor("");
+    setSubmittedInboxSize("");
   };
 
   const handleCreateAccount = (e) => {
     e.preventDefault();
 
     // Validate email format
-    if (!emailValidation.test(Email)) {
+    if (!emailValidation.test(submittedEmail)) {
       alert("Please enter a valid email address.");
       return; // Stop the function if the email is invalid
     }
 
     // Generate username
-    const username = `${FirstName.charAt(0).toLowerCase()}${LastName.toLowerCase()}`;
+    const generatedUserName = `${submittedFirstName.charAt(0).toLowerCase()}${submittedLastName.toLowerCase()}`;
 
-    const newNode = { FirstName, LastName, Type, Email, username};
-    SetAccounts((prevNodes) => [...prevNodes, newNode]);
+   // const newUser = { FirstName: submittedFirstName, LastName: submittedLastName, Type: submittedType, Email: submittedEmail, username};
 
-    setFirstName("");
-    setLastName("");
-    setType();
-    setEmail("");
+
+    const user = {
+      userName: generatedUserName,  // Example username
+      password: "newUserPassword",
+      firstName: submittedFirstName,    // Example first name
+      lastName: submittedLastName,      // Example last name
+      email: submittedEmail, // Example email
+      type: submittedType         // Example type
   };
 
+    createAccount(user);
+  
+    setSubmittedFirstName("");
+    setSubmittedLastName("");
+    setSubmittedType();
+    setSubmittedEmail("");
+  };
+
+  // making changes here
   const handleDeleteAccount = (usernameToDelete) => {
-    SetAccounts((prevAccounts) =>
-      prevAccounts.filter((account) => account.username !== usernameToDelete)
-    );
+
+    deleteAccount(usernameToDelete);
+
+    // SetAccounts((prevAccounts) =>
+    //   prevAccounts.filter((account) => account.username !== usernameToDelete)
+    // );
+
   };
 
 
-  useEffect(() => {
-    // Load nodes from localStorage when the component mounts
-    const savedNodes = localStorage.getItem("nodes");
-    if (savedNodes) {
-      SetCurNodes(JSON.parse(savedNodes));
-    }
-  }, []);
+  // useEffect(() => {
+  //   // Load nodes from localStorage when the component mounts
+  //   const savedNodes = localStorage.getItem("nodes");
+  //   if (savedNodes) {
+  //     SetCurNodes(JSON.parse(savedNodes));
+  //   }
+  // }, []);
 
   return (
     <div>
@@ -360,23 +499,23 @@ const Mainpage = () => {
               onChange={(e) => setSelectedAction(e.target.value)}
             >
               <option value="crdl-action0">--</option>
-              <option value="crdl-action1">Create a Account</option>
-              <option value="crdl-action2">Delete A Account</option>
+              <option value="crdl-action1">Create an Account</option>
+              <option value="crdl-action2">Delete an Account</option>
             </select>
           </div>
         </div>
         <div className="second-item middle">
           <h1>Network Display</h1>
-          <RingNetwork nodes={CurrNodes} deleteNode={handleDeleteNode} showDetails={handleShowDetails} />
+          <RingNetwork nodes={CurrNodes} deleteNode={handleDeleteNode} showDetails={(details) => handleShowDetails(details)}/>
         </div>
         <div className="second-item right">
           <h2>Dialogue Space</h2>
-          {selectedAction === "node-details" && selectedNodeDetails && (
+          {selectedAction === "node-details" && !isEmpty(selectedNodeDetails) && (
             <div className="node-details">
               <h3>Node Details</h3>
-              <p><strong>Node ID:</strong> {selectedNodeDetails.id}</p>
-              <p><strong>Left Neighbor:</strong> {selectedNodeDetails.leftNeighbor}</p>
-              <p><strong>Right Neighbor:</strong> {selectedNodeDetails.rightNeighbor}</p>
+              <p><strong>Node ID:</strong> {selectedNodeDetails.nodeID}</p>
+              <p><strong>Left Neighbor:</strong> {selectedNodeDetails.leftNeighborID}</p>
+              <p><strong>Right Neighbor:</strong> {selectedNodeDetails.rightNeighborID}</p>
               <div>
                 <strong>Inbox:</strong>
                 <select
@@ -407,8 +546,7 @@ const Mainpage = () => {
               </button>
               </div>
               <p><strong>Status:</strong> Active</p>
-              <button onClick={() => {handleDeleteNode(selectedNodeDetails.id);
-               deleteNode(selectedNodeDetails.id)}}>Delete</button>
+              <button onClick={() => {handleDeleteNode(selectedNodeDetails.id);}}>Delete</button>
               {/* Message Status Button */}
               <button onClick={handleToggleMessageStatus}>
                 Message Status
@@ -424,8 +562,8 @@ const Mainpage = () => {
                   <label>Node ID:</label>
                   <input
                     type="text"
-                    value={nodeId}
-                    onChange={(e) => setNodeId(e.target.value)}
+                    value={submittedNodeID}
+                    onChange={(e) => setSubmittedNodeID(e.target.value)}
                     required
                   />
                 </div>
@@ -433,8 +571,8 @@ const Mainpage = () => {
                   <label>Left Neighbor:</label>
                   <input
                     type="text"
-                    value={leftNeighbor}
-                    onChange={(e) => setLeftNeighbor(e.target.value)}
+                    value={submittedLeftNeighbor}
+                    onChange={(e) => setSubmittedLeftNeighbor(e.target.value)}
                     required
                   />
                 </div>
@@ -442,8 +580,8 @@ const Mainpage = () => {
                   <label>Right Neighbor:</label>
                   <input
                     type="text"
-                    value={rightNeighbor}
-                    onChange={(e) => setRightNeighbor(e.target.value)}
+                    value={submittedRightNeighbor}
+                    onChange={(e) => setSubmittedRightNeighbor(e.target.value)}
                     required
                   />
                 </div>
@@ -451,11 +589,11 @@ const Mainpage = () => {
                   <label>Inbox Size:</label>
                   <input
                     type="number"
-                    value={inboxSize}
+                    value={submittedInboxSize}
                     onChange={(e) => {
                       const value = parseInt(e.target.value);
                       if (value >= 0) {
-                        setInboxSize(value);
+                        setSubmittedInboxSize(value);
                       }
                     }}
                     min="1"
@@ -474,8 +612,8 @@ const Mainpage = () => {
                   <label>Node ID:</label>
                   <input
                     type="text"
-                    value={DelNodeId}
-                    onChange={(e) => setDelNodeId(e.target.value)}
+                    value={submittedDeleteNodeId}
+                    onChange={(e) => setSubmittedDeleteNodeId(e.target.value)}
                     required
                   />
                 </div>
@@ -598,8 +736,8 @@ const Mainpage = () => {
                   <label>First Name:</label>
                   <input
                     type="text"
-                    value={FirstName}
-                    onChange={(e) => setFirstName(e.target.value)}
+                    value={submittedFirstName}
+                    onChange={(e) => setSubmittedFirstName(e.target.value)}
                     required
                   />
                 </div>
@@ -607,8 +745,8 @@ const Mainpage = () => {
                   <label>Last Name:</label>
                   <input
                     type="text"
-                    value={LastName}
-                    onChange={(e) => setLastName(e.target.value)}
+                    value={submittedLastName}
+                    onChange={(e) => setSubmittedLastName(e.target.value)}
                     required
                   />
                 </div>
@@ -616,8 +754,8 @@ const Mainpage = () => {
                   <label>Type:</label>
                   <select
                     id="Choice-Type"
-                    value={Type}
-                    onChange={(e) => setType(e.target.value)}
+                    value={submittedType}
+                    onChange={(e) => setSubmittedType(e.target.value)}
                   >
                     <option value="First-Action">Adminstrator</option>
                     <option value="Second-Action">Operator</option>
@@ -627,8 +765,8 @@ const Mainpage = () => {
                   <label>Email:</label>
                   <input
                     type="text"
-                    value={Email}
-                    onChange={(e) => setEmail(e.target.value)}
+                    value={submittedEmail}
+                    onChange={(e) => setSubmittedEmail(e.target.value)}
                     required
                   />
                 </div>
@@ -639,16 +777,20 @@ const Mainpage = () => {
 
           {selectedAction === "crdl-action2" && (
             <div className="delete-account-form">
-              <h3>Delete A Account</h3>
+              <h3>Delete An Account</h3>
 
               <div>
                 {Accounts.length > 0 ? (
                   Accounts.map((account) => (
                     <div key={account.username}>
                       <p>
+                        {console.log("Account is", Accounts)}
                         {account.username} :{" "}
                         <button
-                          onClick={() => handleDeleteAccount(account.username)}
+                          onClick={() => {
+                            console.log("inside the onclick and accounts is ", Accounts);
+                            handleDeleteAccount(account.username)}
+                          }
                         >
                           Delete
                         </button>
@@ -656,7 +798,7 @@ const Mainpage = () => {
                     </div>
                   ))
                 ) : (
-                  <p>No Accounts Avaible To Delete.</p>
+                  <p>No Accounts Available To Delete.</p>
                 )}
               </div>
             </div>

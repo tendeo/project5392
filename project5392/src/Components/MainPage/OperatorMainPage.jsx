@@ -1,7 +1,9 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import "./MainPage.css";
 import { useLocation } from "react-router-dom";
 import { useNavigate } from "react-router-dom";
+import NodeClient from "../../Clients/NodeClient";
+import {isEmpty} from "lodash";
 
 import Messagecreated from "../Parts/MessageCreated";
 
@@ -32,11 +34,24 @@ const OperatorMainPage = () => {
     setShowMessageStatus(!showMessageStatus);
   };
 
-  const [CurrNodes, SetCurNodes] = useState([
-    { id: "N1", status: "Active", leftNeighbor: "N3", rightNeighbor: "N2", inboxSize: 2, inbox: ["Message 1", "Message 2"], store: [] },
-    { id: "N2", status: "Active", leftNeighbor: "N1", rightNeighbor: "N3", inboxSize: 2, inbox: ["Message 1"], store: [] },
-    { id: "N3", status: "Active",leftNeighbor: "N2", rightNeighbor: "N1", inboxSize: 3, inbox: [], store: [] },
-  ]);
+  useEffect(() => {
+    const getNodes = async () => {
+      const nodeClient = new NodeClient();
+      try {
+        console.log("in the use effect on main page and trying to fetch the nodes");
+        const fetchedNodes = await nodeClient.getNodes();
+        console.log(fetchedNodes);
+        SetCurNodes(fetchedNodes);
+      } catch (error) {
+        console.error('Error fetching data:', error);
+      }
+    };
+  
+    getNodes();  // Trigger the API call when the component mounts
+  }, []);
+
+
+  const [CurrNodes, SetCurNodes] = useState("");
   const [nodeId, setNodeId] = useState("");
   const [leftNeighbor, setLeftNeighbor] = useState("");
   const [rightNeighbor, setRightNeighbor] = useState("");
@@ -44,7 +59,7 @@ const OperatorMainPage = () => {
 
   const [DelNodeId, setDelNodeId] = useState("");
 
-  const [selectedNodeDetails, setSelectedNodeDetails] = useState(null);
+  const [selectedNodeDetails, setSelectedNodeDetails] = useState();
 
   const location = useLocation();
   const username = location.state?.username || "Guest";
@@ -62,15 +77,7 @@ const OperatorMainPage = () => {
 
 
   const handleShowDetails = (node) => {
-
-    const nodeDetails = {
-        id: node.id,
-        leftNeighbor: node.leftNeighbor || "Unknown",
-        rightNeighbor: node.rightNeighbor || "Unknown",
-        inbox: node.inbox || [], // Ensure inbox is an array
-        store: node.store || [], // Ensure store is an array
-      };
-
+    console.log("opertator show details ", node);
     setSelectedNodeDetails(node); // Set the selected node for details view
     setSelectedAction("node-details");
   };
@@ -279,16 +286,16 @@ const OperatorMainPage = () => {
           <h1>Network Display</h1>
           <RingNetwork nodes={CurrNodes} 
           deleteNode={handleDeleteNode}
-          showDetails={handleShowDetails}/>
+          showDetails={(details) => handleShowDetails(details)}/>
         </div>
         <div className="second-item right">
           <h2>Dialogue Space</h2>
-          {selectedAction === "node-details" && selectedNodeDetails && (
+          {selectedAction === "node-details" && !isEmpty(selectedNodeDetails) && (
             <div className="node-details">
               <h3>Node Details</h3>
-              <p><strong>Node ID:</strong> {selectedNodeDetails.id}</p>
-              <p><strong>Left Neighbor:</strong> {selectedNodeDetails.leftNeighbor}</p>
-              <p><strong>Right Neighbor:</strong> {selectedNodeDetails.rightNeighbor}</p>
+              <p><strong>Node ID:</strong> {selectedNodeDetails.nodeID}</p>
+              <p><strong>Left Neighbor:</strong> {selectedNodeDetails.leftNeighborID}</p>
+              <p><strong>Right Neighbor:</strong> {selectedNodeDetails.rightNeighborID}</p>
               <div>
                 <strong>Inbox:</strong>
                 <select
